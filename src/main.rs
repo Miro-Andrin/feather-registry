@@ -8,6 +8,7 @@ use tokio::{
     fs, io,
     io::AsyncReadExt,
     stream::{Stream, StreamExt},
+    sync::mpsc,
 };
 use warp::{redirect, reject, Buf, Filter, Reply};
 
@@ -23,16 +24,7 @@ impl reject::Reject for Error {}
 
 pub type Result<Ok> = std::result::Result<Ok, reject::Rejection>;
 
-#[tokio::main]
-async fn main() {
-    dotenv().ok();
-
-    let pool = PgPool::builder()
-        .max_size(5)
-        .build(&env::var("DATABASE_URL").unwrap())
-        .await
-        .unwrap();
-
+fn routes(pool: PgPool) -> impl Filter<Extract = impl warp::Reply + 'static> + Clone {
     let database = warp::any().map(move || pool.clone());
 
     let dl = warp::get()
@@ -53,8 +45,49 @@ async fn main() {
         .and(warp::path("crates"))
         .and(publish.or(dl))
         .recover(handle_rejection);
+    
+    routes
+}
+
+#[tokio::main]
+async fn main() {
+    dotenv().ok();
+
+    let pool = PgPool::builder()
+        .max_size(5)
+        .build(&env::var("DATABASE_URL").unwrap())
+        .await
+        .unwrap();
+        
+    let (worker, tx) = Worker::new(pool.clone());
+    let routes = routes(pool.clone());
+
+
+    tokio::spawn(worker.run());
 
     warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
+}
+
+struct Worker {
+    pool: PgPool,
+    rx: mpsc::Receiver<()>,
+}
+
+impl Worker {
+    fn new(pool: PgPool) -> (Self, mpsc::Sender<()>) {
+        let (tx, rx) = mpsc::channel(1);
+        (Self {
+            pool,
+            rx,
+        }, tx)
+    }
+
+    async fn run(mut self) {
+        loop {
+            let _ = self.rx.recv().await;
+            // do the git thing.
+        }
+    }
 }
 
 pub async fn download(pool: PgPool, crate_name: String, version: String) -> Result<impl Reply> {
@@ -130,7 +163,7 @@ struct CrateMeta {
     /// String of the content of the README file.
     readme: Option<String>,
     /// String of a relative path to a README file in the crate.
-    readme_files: Option<String>,
+    readme_file: Option<String>,
     /// Array of strings of keywords for the package.
     keywords: Vec<String>,
     /// Array of strings of categories for the package.
@@ -227,4 +260,14 @@ async fn handle_rejection(
     _err: reject::Rejection,
 ) -> ::std::result::Result<impl Reply, Infallible> {
     Ok(warp::reply::with_status("error", StatusCode::OK))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn publish() {
+        // let routes = routes();
+    }
 }

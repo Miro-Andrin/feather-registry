@@ -7,5 +7,7 @@ This project usaes postgres and the postgres extensions CITEXT and SEMVER.
 [x] publish and upload
 [ ] authentication on publish
 [ ] authentication tokens
+[ ] github oauth
 [ ] download
 [ ] git http repo (github worker)
+[ ] searching

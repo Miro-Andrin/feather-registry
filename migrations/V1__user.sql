@@ -1,3 +1,3 @@
 CREATE TABLE user(
-    
+    "id" SERIAL INT NOT NULL,
 );
