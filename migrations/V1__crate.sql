@@ -1,12 +1,14 @@
-CREATE TABLE "crate"(
+CREATE TABLE IF NOT EXISTS "crate"(
     "name" CITEXT NOT NULL,
     "owner" INT NOT NULL,
     PRIMARY KEY ("name"),
-    FOREIGN KEY ("owner") REFERENCES "user" ("id"),
-    CONSTRAINT "valid_name" CHECK ( "name" ~= '[A-Za-z_-][A-Za-z0-9_-]*' )
+    FOREIGN KEY ("owner") REFERENCES "user" ("id")
+    /*CONSTRAINT "valid_name" CHECK ( "name" ~= '[A-Za-z_-][A-Za-z0-9_-]*' )*/
 );
 
-CREATE TABLE "crate_version"(
+
+
+CREATE TABLE IF NOT EXISTS "crate_version"(
     "crate" CITEXT NOT NULL,
     "download" VARCHAR NOT NULL,
     "version" SEMVER NOT NULL,
