@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "crate"(
     "owner" INT NOT NULL,
     PRIMARY KEY ("name"),
     FOREIGN KEY ("owner") REFERENCES "user" ("id")
-    /*CONSTRAINT "valid_name" CHECK ( "name" ~= '[A-Za-z_-][A-Za-z0-9_-]*' )*/
+    CONSTRAINT "valid_name" CHECK ( "name" ~= '[A-Za-z_-][A-Za-z0-9_-]*' )
 );
 
 
