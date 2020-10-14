@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "crate"(
+CREATE TABLE "crate"(
     "name" CITEXT NOT NULL,
     "owner" INT NOT NULL,
     PRIMARY KEY ("name"),
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS "crate"(
 
 
 
-CREATE TABLE IF NOT EXISTS "crate_version"(
+CREATE TABLE "crate_version"(
     "crate" CITEXT NOT NULL,
     "download" VARCHAR NOT NULL,
     "version" SEMVER NOT NULL,
