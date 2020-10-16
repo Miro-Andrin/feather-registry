@@ -14,6 +14,7 @@ use warp::{redirect, reject, Buf, Filter, Reply};
 
 use sqlx::postgres::PgPool;
 use std::env;
+use rand::Rng;
 
 #[derive(Debug)]
 pub enum Error {
@@ -90,15 +91,16 @@ impl Worker {
     }
 }
 
-pub async fn download(pool: PgPool, crate_name: String, version: String) -> Result<impl Reply> {
+pub async fn download(pool: PgPool, crate_name: String, crate_version: String) -> Result<impl Reply> {
     let dl: String = sqlx::query!(
         "SELECT download FROM crate_version WHERE crate = $1::VARCHAR AND \"version\" = $2::VARCHAR::SEMVER",
         crate_name,
-        version,
+        crate_version,
     )
     .fetch_one(&pool)
     .await
     .unwrap().download;
+
     Ok(redirect(
         dl.parse::<Uri>()
             .map_err(|_| reject::custom(Error::Internal))?,
@@ -196,7 +198,6 @@ impl CrateMeta {
                 path.push(&self.name[2..4]);
             }
         };
-        path.push(&self.name);
         path
     }
 }
@@ -237,10 +238,17 @@ pub async fn publish(
     .await
     .map_err(|_| reject::custom(Error::Internal))?;
 
+    // Path name of git file.
     let path = crate_meta.get_path();
     fs::create_dir_all(&path)
         .await
         .map_err(|_| reject::custom(Error::Internal))?;
+
+
+    let mut path = path::PathBuf::new();
+    path.push("crates");
+    path.push(base64::encode(rand::thread_rng().gen::<[u8; 32]>()));
+    path.set_extension("crate");
 
     let mut file = fs::File::create(&path)
         .await
