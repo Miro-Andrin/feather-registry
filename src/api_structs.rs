@@ -1,7 +1,5 @@
 /*
-This files containst structs that represent entries in the database.
-If you want to see the layout of the database, see the @TODO
-
+This files containst structs that represent what we get inside post requests from the user
 */
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
