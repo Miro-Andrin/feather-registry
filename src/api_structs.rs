@@ -40,7 +40,7 @@ pub(crate) struct Dependency {
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct CrateMeta {
     /// The name of the package.
-    name: String,
+    pub name: String,
     /// The version of the package being published.
     vers: String,
     /// Array of direct dependencies of the package.

@@ -11,12 +11,16 @@ use tokio::{
 use warp::{redirect, reject, Buf, Filter, Reply};
 
 use sqlx::postgres::PgPool;
+
 use std::env;
 use rand::Rng;
 use std::path;
 
 mod api_structs;
 use api_structs::CrateMeta;
+mod db_structs;
+use db_structs::CrateVersion;
+
 
 #[derive(Debug)]
 pub enum Error {
@@ -80,9 +84,14 @@ impl Worker {
         (Self { pool, rx }, tx)
     }
     async fn run(mut self) {
+        
         loop {
             let _ = self.rx.recv().await;
             // do the git thing.
+            
+            let x = CrateVersion::all_not_pushed(&self.pool).await;
+
+            println!("entries -> {:?}",x);
         }
     }
 }

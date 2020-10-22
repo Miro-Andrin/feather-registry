@@ -132,14 +132,16 @@ pub fn get_and_update_repocitory(
         obj.into_commit()
             .map_err(|_| git2::Error::from_str("Couldn't find commit"))
     }
-    /// Adds all the changes to the path and makes a commit for it. Returns a id for the commit. 
+    /// Adds all the changes to the path and makes a commit for it. Returns a oid for the commit.
+    /// the oid is a binary representation of the sha1 hash. 
     pub fn add_and_commit(
         repo: &git2::Repository,
-        path: &Path,
+        file: &Path,
         message: &str,
     ) -> Result<git2::Oid, git2::Error> {
         let signature = git2::Signature::now("Mr. Bot", "missing")?;
 
+        // Add file 
         let mut index = repo.index()?;
         index.add_path(path)?;
 
@@ -158,27 +160,5 @@ pub fn get_and_update_repocitory(
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::*;
 
-    #[test]
-    fn it_works() {
-        let git_url = "https://github.com/Miro-Andrin/testing-git2.git";
-        let path = Path::new("./testing-git2");
-        let res = get_and_update_repocitory(path, git_url);
-        assert!(res.is_ok());
 
-        let git_url = "https://github.com/Miro-Andrin/testing-git2.git1";
-        let path = Path::new("./testing-git2");
-
-        let res = get_and_update_repocitory(path, git_url);
-        assert!(res.is_err());
-
-        let git_url = "https://github.com/Miro-Andrin/testing-git2.git";
-        let path = Path::new(".");
-
-        let res = get_and_update_repocitory(path, git_url);
-        assert!(res.is_err());
-    }
-}
